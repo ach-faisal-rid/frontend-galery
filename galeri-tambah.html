@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Tambah Galeri</title>
+	<link rel="stylesheet" href="style-dashboard.css">
+</head>
+<body class="datases">
+<div class="dashboard-container">
+	<h2>Halaman Galeri</h2>
+	<p>Hallo <span id="usersName"></span> Anda berhasil login!</p>
+	<p>Level: <span id="usersLevel"></span></p>
+
+	<div class="ul" style="flex-direction: row; gap: 1px">
+		<a href="/dashboard.html" class="menu-item">Dashboard</a>
+		<a href="/galeri.html" class="menu-item">Galeri</a>
+		<a href="/pengguna.html" class="menu-item">Pengguna</a>
+		<a href="javascript:void(0)" class="menu-item" id="menu-logout">LogOut</a>
+	</div>
+</div>
+
+<main id="pengguna" class="dashboard-container">
+	<div class="header-title">
+		<h2>Tambah Galeri</h2>
+		<div class="blok-btn">
+		</div>
+	</div>
+	<form class="form">
+		<label for="nama">
+			Nama
+			<input required type="text" name="nama" id="nama">
+		</label>
+		<label for="image">
+			Gambar
+			<input required type="file" accept="image/*" name="image" id="image">
+		</label>
+		<button type="submit" class="btn">Simpan</button>
+		<div id="message"></div> <!-- Elemen pesan -->
+	</form>
+</main>
+
+<script defer type="text/javascript" src="/adminpanel.js"></script>
+<script defer type="text/javascript" src="/galeri-tambah.js"></script>
+</body>
+</html>

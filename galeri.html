@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dashboard</title>
+	<link rel="stylesheet" href="style-dashboard.css">
+</head>
+<body class="datases">
+<div class="dashboard-container">
+	<h2>Halaman Galeri</h2>
+	<p>Hallo <span id="usersName"></span> Anda berhasil login!</p>
+	<p>Level: <span id="usersLevel"></span></p>
+
+	<div class="ul" style="flex-direction: row; gap: 1px">
+		<a href="/dashboard.html" class="menu-item">Dashboard</a>
+		<a href="/galeri.html" class="menu-item">Galeri</a>
+		<a href="/pengguna.html" class="menu-item">Pengguna</a>
+		<a href="javascript:void(0)" class="menu-item" id="menu-logout">LogOut</a>
+	</div>
+</div>
+
+<main class="main-container">
+	<div>
+		<div class="header-title">
+			<h2>Data Galeri</h2>
+			<div class="blok-btn">
+				<a href="galeri-tambah.html" id="btn-tambah">Tambah</a>
+				<a href="javascript:void(0)" id="btn-refresh">Refresh</a>
+			</div>
+		</div>
+		<label for="filter_q">
+			<input type="text" id="filter_q" placeholder="Filter nama galeri">
+		</label>
+	</div>
+	<div class="galeri-container"></div>
+
+
+	<!-- Modal Preloading -->
+	<div id="preloading-modal" class="modal">
+		<div class="modal-content">
+			<p>Memuat...</p>
+		</div>
+	</div>
+
+	<!-- Modal Edit Gambar -->
+	<div id="edit-image-modal" class="modal">
+		<div class="modal-content">
+			<h3>Edit Gambar</h3>
+			<img id="current-image" src="" alt="Current Image" style="width: 100%; border-radius: 8px;">
+			<label for="new-image-file">URL Gambar Baru:</label>
+			<input type="file" id="new-image-file" accept="image/*">
+			<button class="btn" id="submit-new-image">Simpan</button>
+			<button id="cancel-edit-image">Batal</button>
+		</div>
+	</div>
+</main>
+
+	<script defer type="text/javascript" src="/adminpanel.js"></script>
+	<script defer type="text/javascript" src="/galeri.js"></script>
+</body>
+</html>
