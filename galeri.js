@@ -4,7 +4,7 @@ let debounceTimeout;
 document.addEventListener("DOMContentLoaded", () => {
 	if (!token) {
 		localStorage.clear()
-		window.location.href = "/index.html"; // Redirect ke halaman login jika tidak ada token
+		window.location.href = "index.html"; // Redirect ke halaman login jika tidak ada token
 		return;
 	}
 
@@ -35,18 +35,9 @@ async function getGaleri(query = "") {
 	preloadingModal.style.display = "block";
 
 	try {
-		let url = "http://localhost/smkti/gallery/api-gallery-be/public/api/galeri";
-		if (query) {
-			url += `?filter_q=${query}`;
-		}
-
-		const response = await fetch(url, {
-			method: "GET",
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
+		let path = '/galeri';
+		if (query) path += `?filter_q=${encodeURIComponent(query)}`;
+		const response = await apiFetch(path, { method: 'GET' });
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -55,7 +46,7 @@ async function getGaleri(query = "") {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 			throw new Error("Gagal memuat data galeri");
 		}
@@ -98,13 +89,7 @@ async function deleteGaleri(id) {
 	preloadingModal.style.display = "block";
 
 	try {
-		const response = await fetch(`http://localhost/smkti/FE-BE-galeri/restapi/api/galeri/${id}`, {
-			method: "DELETE",
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
+		const response = await apiFetch(`/galeri/${id}`, { method: 'DELETE' });
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -113,7 +98,7 @@ async function deleteGaleri(id) {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 
 			throw new Error(errorData.message);
@@ -141,14 +126,7 @@ async function editNama(id) {
 	preloadingModal.style.display = "block";
 
 	try {
-		const response = await fetch(`http://localhost/smkti/FE-BE-galeri/restapi/api/galeri/${id}`, {
-			method: "PUT",
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({nama: newName})
-		});
+		const response = await apiFetch(`/galeri/${id}`, { method: 'PUT', body: JSON.stringify({ nama: newName }) });
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -157,7 +135,7 @@ async function editNama(id) {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 
 			throw new Error(errorData.message);
@@ -205,10 +183,12 @@ async function editImage(id, newImageFile) {
 		const formData = new FormData();
 		formData.append("image", newImageFile);
 
-		const response = await fetch(`http://localhost/smkti/FE-BE-galeri/restapi/api/galeri/${id}/image`, {
-			method: "POST",
+		// apiFetch doesn't automatically set Content-Type for FormData; pass headers manually without Content-Type
+		const url = `${API_BASE}/galeri/${id}/image`;
+		const response = await fetch(url, {
+			method: 'POST',
 			headers: {
-				"Authorization": `Bearer ${token}`
+				'Authorization': `Bearer ${token}`
 			},
 			body: formData
 		});
@@ -220,7 +200,7 @@ async function editImage(id, newImageFile) {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 
 			throw new Error(errorData.message);

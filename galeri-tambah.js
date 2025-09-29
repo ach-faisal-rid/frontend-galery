@@ -31,10 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		isLoading = true;
 
 		try {
-			const response = await fetch("http://localhost/smkti/gallery/api-gallery-be/public/api/galeri", {
-				method: "POST",
+			const url = `${API_BASE}/galeri`;
+			const response = await fetch(url, {
+				method: 'POST',
 				headers: {
-					"Authorization": `Bearer ${token}`,
+					'Authorization': `Bearer ${token}`
 				},
 				body: formData
 			});
@@ -47,14 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (response.status === 401) {
 					localStorage.clear();
 					alert(errorData.message);
-					window.location.href = "/index.html";
+					window.location.href = "index.html";
 				}
 
 				throw new Error(errorData.message);
 			}
 
 			// ketika berhasil pindah halaman
-			window.location.href = "/galeri.html";
+			window.location.href = "galeri.html";
 		} catch (error) {
 			console.error("Error:", error);
 			showMessage(`Error: ${error.message}`, "red");

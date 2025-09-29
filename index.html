@@ -3,25 +3,59 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World</title>
-    <link href='/style.css' rel='stylesheet'>
+    <title>Gallery App - Authentication</title>
+    <link href='style.css' rel='stylesheet'>
 </head>
 <body>
-<div class="login-container">
-    <h2>Login</h2>
-    <form id="login-form">
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="auth-brand">
+            <img src="logo.png" alt="Gallery logo" class="auth-logo" onerror="this.style.display='none'">
+            <div class="auth-brand-text">
+                <h1 class="brand-name">Gallery App</h1>
+                <small class="brand-sub">Manage your photos easily</small>
+            </div>
+        </div>
+        <h2 id="auth-title">Login</h2>
+        <div class="auth-toggle" role="tablist" aria-label="Authentication toggle">
+            <button id="show-login" class="active" type="button" role="tab" aria-selected="true">Login</button>
+            <button id="show-register" type="button" role="tab" aria-selected="false">Register</button>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="auth-form">
         <div class="input-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" required>
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required>
         </div>
         <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" required>
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required>
         </div>
         <button type="submit">Login</button>
-        <div id="error-message"></div>
+        <div id="login-message"></div>
+    </form>
+
+    <!-- Registration Form -->
+    <form id="register-form" class="auth-form hidden">
+        <div class="input-group">
+            <label for="register-name">Full Name</label>
+            <input type="text" id="register-name" required>
+        </div>
+        <div class="input-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required>
+        </div>
+        <div class="input-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" required>
+        </div>
+        <button type="submit">Register</button>
+        <div id="register-message"></div>
     </form>
 </div>
-<script defer type="text/javascript" src="/main.js"></script>
+<script defer type="text/javascript" src="app-config.js"></script>
+<script defer type="text/javascript" src="main.js"></script>
 </body>
 </html>

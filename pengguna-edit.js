@@ -22,13 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			isLoading = true
-			const response = await fetch(`http://localhost/smkti/gallery/api-gallery-be/public/api/users${userId}`, {
-				method: 'GET',
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				}
-			});
+			const response = await apiFetch(`/users${userId}`, { method: 'GET' });
 
 			isLoading = false
 			if (!response.ok) {
@@ -36,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (response.status === 401) {
 					localStorage.clear()
 					alert(errorData.message)
-					window.location.href = "/index.html";
+					window.location.href = "index.html";
 				}else if (response.status === 403) {
 					throw new Error(errorData.message);
 				}else {
@@ -88,12 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const messageElement = document.getElementById('message');
 		isLoading = true
 		try {
-			const response = await fetch(`http://localhost/smkti/FE-BE-galeri/restapi/api/users/${userId}`, {
-				method: "PUT",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json"
-				},
+			const response = await apiFetch(`/users/${userId}`, {
+				method: 'PUT',
 				body: JSON.stringify(data)
 			});
 
@@ -103,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (response.status === 401) {
 					localStorage.clear()
 					alert(errorData.message)
-					window.location.href = "/index.html";
+					window.location.href = "index.html";
 				}else if (response.status === 403) {
 					throw new Error(errorData.message);
 				}else {
@@ -112,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 
 			// ketika berhasil pindah halaman
-			window.location = "/pengguna.html"
+			window.location = "pengguna.html"
 		} catch (error) {
 			console.error("Error:", error);
 			messageElement.innerText = `Error: ${error.message}`;

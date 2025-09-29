@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const token = localStorage.getItem("token");
 	if (!token) {
 		// Redirect ke halaman dashboard jika token ditemukan
-		window.location.href = "/index.html";
+		window.location.href = "index.html";
 	}
 
 	getCurrentUsers()
@@ -14,20 +14,16 @@ const onLogout = document.getElementById("menu-logout");
 
 onLogout.onclick = () => {
 	localStorage.clear()
-	window.location.href = "/index.html";
+		window.location.href = "index.html";
 }
 
 async function getCurrentUsers() {
 	const token = localStorage.getItem("token");
 
 	try {
-		// Lakukan permintaan (request) POST ke endpoint login
-		const response = await fetch("http://localhost/smkti/gallery/api-gallery-be/public/api/current", {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json"
-			},
+		// Use apiFetch helper, it will attach Authorization header automatically
+		const response = await apiFetch('/current', {
+			method: 'GET'
 		});
 
 		if (!response.ok) {
@@ -35,7 +31,7 @@ async function getCurrentUsers() {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 			return;
 		}

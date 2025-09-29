@@ -29,13 +29,9 @@ async function deleteUser(users_id) {
 
 	try {
 
-		const response = await fetch(`http://localhost/smkti/gallery/api-gallery-be/public/api/users${users_id}`, {
-			method: "DELETE",
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
+			const response = await apiFetch(`/users${users_id}`, {
+				method: 'DELETE'
+			});
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -44,7 +40,7 @@ async function deleteUser(users_id) {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 
 			throw new Error(errorData.message);
@@ -70,13 +66,7 @@ async function getUsers() {
 		const tr = document.createElement("tr");
 		tr.innerHTML = `<td colspan="6">Sedang mengambil data...</td>`;
 		tbody.appendChild(tr);
-		const response = await fetch("http://localhost/smkti/FE-BE-galeri/restapi/api/users", {
-			method: "GET",
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
+		const response = await apiFetch('/users', { method: 'GET' });
 
 		if (!response.ok) {
 			isLoading = false;
@@ -86,7 +76,7 @@ async function getUsers() {
 			if (response.status === 401) {
 				localStorage.clear()
 				alert(errorData.message)
-				window.location.href = "/index.html";
+				window.location.href = "index.html";
 			}
 
 			tbody.innerHTML = "";
