@@ -27,6 +27,15 @@
 			<a href="pengguna-tambah.html" id="btn-tambah">Tambah</a>
 			<a href="javascript:void(0)" id="btn-refresh">Refresh</a>
 		</div>
+
+		<!-- Search by ID -->
+		<div style="margin-left: 16px; display:flex; gap:8px; align-items:center;">
+			<label for="search-id">Cari ID:</label>
+			<input id="search-id" type="number" min="1" placeholder="Masukkan ID" style="width:120px;padding:6px;border:1px solid #ddd;border-radius:4px">
+			<button id="btn-search-id" style="padding:6px 10px;">Cari</button>
+			<button id="btn-clear-search" style="padding:6px 10px;">Clear</button>
+			<span id="search-message" style="color:#c00;margin-left:8px"></span>
+		</div>
 	</div>
 	<div>
 		<table class="table">

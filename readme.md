@@ -17,3 +17,9 @@ ini adalah frontend gallery dari website saya yang mana saya buat untuk mengakom
 > dan kita menemukan masalah baru dimana ? did users terdapat colom yang kosong dimana di situ ada yang namanya level dan telephone itu seharusnya ada tapi di punya kita tidak ada jadi kalau yang mau menambahkan monggo di tambahkan di situ.
 
 ![alt text](image-3.png)
+
+sudah fix tinggal error dikit2,
+
+![alt text](image-4.png)
+
+> simpan gambar dari pinterest link, sistemnya masih ada kekurangan dan kalau ingin memperbaiki siapa yang mau.

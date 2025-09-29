@@ -10,8 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			return; // Jika sedang loading, hentikan eksekusi
 		}
 
-		const nama = document.getElementById('nama').value;
-		const imageFile = document.getElementById('image').files[0];
+	const title = document.getElementById('title').value;
+	const deskripsi = document.getElementById('deskripsi').value;
+	const imageFile = document.getElementById('image').files[0];
 
 		if (!imageFile) {
 			showMessage("Silakan pilih file gambar.", "red");
@@ -19,7 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		const formData = new FormData();
-		formData.append("nama", nama);
+	formData.append('title', title);
+	formData.append('deskripsi', deskripsi);
 		formData.append("image", imageFile);
 
 		submitGaleri(formData);
@@ -31,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		isLoading = true;
 
 		try {
-			const url = `${API_BASE}/galeri`;
+			const url = `${API_BASE}/galleries`;
 			const response = await fetch(url, {
 				method: 'POST',
 				headers: {

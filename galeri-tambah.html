@@ -8,40 +8,128 @@
 </head>
 <body class="datases">
 <div class="dashboard-container">
-	<h2>Halaman Galeri</h2>
-	<p>Hallo <span id="usersName"></span> Anda berhasil login!</p>
-	<p>Level: <span id="usersLevel"></span></p>
+	<!-- include centralized config so API_BASE and apiFetch are available -->
+	<script src="./app-config.js"></script>
 
-	<div class="ul" style="flex-direction: row; gap: 1px">
-		<a href="dashboard.html" class="menu-item">Dashboard</a>
-		<a href="galeri.html" class="menu-item">Galeri</a>
-		<a href="pengguna.html" class="menu-item">Pengguna</a>
-		<a href="javascript:void(0)" class="menu-item" id="menu-logout">LogOut</a>
-	</div>
-</div>
-
-<main id="pengguna" class="dashboard-container">
-	<div class="header-title">
+	<main style="padding:20px; max-width:720px; margin:0 auto;">
 		<h2>Tambah Galeri</h2>
-		<div class="blok-btn">
-		</div>
-	</div>
-	<form class="form">
-		<label for="nama">
-			Nama
-			<input required type="text" name="nama" id="nama">
-		</label>
-		<label for="image">
-			Gambar
-			<input required type="file" accept="image/*" name="image" id="image">
-		</label>
-		<button type="submit" class="btn">Simpan</button>
-		<div id="message"></div> <!-- Elemen pesan -->
-	</form>
-</main>
 
-<script defer type="text/javascript" src="app-config.js"></script>
-<script defer type="text/javascript" src="adminpanel.js"></script>
-<script defer type="text/javascript" src="galeri-tambah.js"></script>
-</body>
-</html>
+		<label>Title
+			<input id="title" type="text" placeholder="Judul" style="width:100%;padding:8px;margin-top:6px" />
+		</label>
+
+		<label>Deskripsi
+			<textarea id="deskripsi" rows="4" placeholder="Deskripsi" style="width:100%;padding:8px;margin-top:6px"></textarea>
+		</label>
+
+		<label>File URL (lokal path atau URL Pinterest)
+			<input id="file" type="text" placeholder="https://www.pinterest.com/pin/12345/... or uploads/1.jpg" style="width:100%;padding:8px;margin-top:6px" />
+		</label>
+
+		<label>Atau pilih file (unggah dari komputer)
+			<input id="file_input" type="file" accept="image/*" style="display:block;margin-top:6px" />
+		</label>
+
+		<label>Author ID
+			<input id="author_id" type="text" placeholder="user id (angka)" style="width:100%;padding:8px;margin-top:6px" />
+		</label>
+
+		<button id="submit" style="margin-top:12px;padding:10px 16px;background:#007bff;color:white;border:none;border-radius:6px">Buat Galeri</button>
+
+		<div id="result" style="margin-top:12px"></div>
+		<h3 style="margin-top:16px">Preview</h3>
+		<div id="preview"></div>
+	</main>
+
+	<script>
+		// use apiFetch from app-config.js (falls back to sensible API_BASE)
+		function buildPublicUrl(filePath) {
+			if (!filePath) return null;
+			if (/^https?:\/\//i.test(filePath)) return filePath;
+			try {
+				const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : (location.origin + '/smkti/gallery-app/backend/api');
+				const projectRoot = apiBase.replace(/\/backend\/api\/?$/, '');
+				return projectRoot.replace(/\/+$/, '') + '/' + filePath.replace(/^\/+/, '');
+			} catch (e) {
+				return location.origin + '/' + filePath.replace(/^\/+/, '');
+			}
+		}
+
+		document.getElementById('submit').addEventListener('click', async () => {
+			const title = document.getElementById('title').value.trim();
+			const deskripsi = document.getElementById('deskripsi').value.trim();
+			const file = document.getElementById('file').value.trim();
+			const author_id = document.getElementById('author_id').value.trim();
+			const fileInput = document.getElementById('file_input');
+
+			if (!title) { alert('Title wajib diisi'); return; }
+
+			const payload = { title, deskripsi };
+			if (file) payload.file = file;
+			if (author_id) payload.author_id = Number(author_id) || undefined;
+
+			try {
+				// create gallery first (JSON)
+				const res = await apiFetch('/galleries', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+				});
+
+				const data = await (async () => { try { return await res.json(); } catch(e){ return { raw: await res.text() }; } })();
+
+				document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+
+				const imgContainer = document.getElementById('preview');
+				imgContainer.innerHTML = '';
+				const responseData = data && data.data ? data.data : null;
+
+				// If a local file is selected, upload it to /galleries/{id}/image
+				if (fileInput && fileInput.files && fileInput.files.length > 0 && responseData && responseData.id) {
+					const form = new FormData();
+					form.append('image', fileInput.files[0]);
+
+					const uploadUrl = (typeof API_BASE !== 'undefined' ? API_BASE : (location.origin + '/smkti/gallery-app/backend/api')) + '/galleries/' + responseData.id + '/image';
+
+					const headers = {};
+					if (typeof localStorage !== 'undefined' && localStorage.getItem('token')) headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+
+					const uploadRes = await fetch(uploadUrl, { method: 'POST', headers, body: form });
+					const uploadJson = await (async () => { try { return await uploadRes.json(); } catch(e){ return { raw: await uploadRes.text() }; } })();
+					document.getElementById('result').innerHTML += '<pre>' + JSON.stringify({ upload: uploadJson }, null, 2) + '</pre>';
+
+					const uploadedData = uploadJson && uploadJson.data ? uploadJson.data : null;
+					let imgUrl = null;
+					if (uploadedData && uploadedData.file) imgUrl = buildPublicUrl(uploadedData.file);
+					else if (responseData && responseData.file) imgUrl = buildPublicUrl(responseData.file);
+
+					if (imgUrl) {
+						const img = document.createElement('img');
+						img.src = imgUrl;
+						img.className = 'preview';
+						img.alt = title;
+						img.onerror = () => { img.style.opacity = '0.5'; };
+						imgContainer.appendChild(img);
+					}
+
+				} else {
+					// no local file chosen — show image from response or from provided URL
+					let imgUrl = null;
+					if (responseData && responseData.file) imgUrl = buildPublicUrl(responseData.file);
+					else if (payload.file) imgUrl = buildPublicUrl(payload.file);
+
+					if (imgUrl) {
+						const img = document.createElement('img');
+						img.src = imgUrl;
+						img.className = 'preview';
+						img.alt = title;
+						img.onerror = () => { img.style.opacity = '0.5'; };
+						imgContainer.appendChild(img);
+					}
+				}
+
+			} catch (err) {
+				document.getElementById('result').innerHTML = '<pre>' + (err && err.message ? err.message : String(err)) + '</pre>';
+			}
+		});
+	</script>

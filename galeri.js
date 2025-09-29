@@ -1,6 +1,19 @@
 const token = localStorage.getItem("token");
 let debounceTimeout;
 
+// Build a public URL for a backend-returned file path. Handles full URLs and relative paths.
+function buildPublicUrl(filePath) {
+	if (!filePath) return null;
+	if (/^https?:\/\//i.test(filePath)) return filePath;
+	try {
+		const apiBase = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : (location.origin + '/smkti/gallery-app/backend/api');
+		const projectRoot = apiBase.replace(/\/backend\/api\/?$/, '');
+		return projectRoot.replace(/\/+$/, '') + '/' + filePath.replace(/^\/+/, '');
+	} catch (e) {
+		return location.origin + '/' + filePath.replace(/^\/+/, '');
+	}
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	if (!token) {
 		localStorage.clear()
@@ -24,6 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		getGaleri(query); // Panggil fungsi untuk mengambil data galeri dengan filter
 	}, 700)); // Delay 300 ms
 
+	// Wire Refresh button if present
+	const btnRefresh = document.getElementById('btn-refresh');
+	if (btnRefresh) btnRefresh.addEventListener('click', () => getGaleri());
+
 	getGaleri(); // Panggil fungsi untuk mengambil data galeri saat halaman dimuat
 });
 
@@ -35,7 +52,7 @@ async function getGaleri(query = "") {
 	preloadingModal.style.display = "block";
 
 	try {
-		let path = '/galeri';
+	let path = '/galleries';
 		if (query) path += `?filter_q=${encodeURIComponent(query)}`;
 		const response = await apiFetch(path, { method: 'GET' });
 
@@ -52,22 +69,60 @@ async function getGaleri(query = "") {
 		}
 
 		const result = await response.json();
-		const galeri = result.data;
+		const galeri = Array.isArray(result.data) ? result.data : (result.data ? [result.data] : []);
+
+		if (!galeri || galeri.length === 0) {
+			console.info('getGaleri: backend returned no items or unexpected shape', result);
+		}
 
 		const galeriContainer = document.querySelector(".galeri-container");
 		galeriContainer.innerHTML = ""; // Kosongkan kontainer galeri sebelum mengisi
 
 		galeri.forEach((item, index) => {
-			const galeriItem = document.createElement("div");
-			galeriItem.className = "galeri-item";
-			galeriItem.innerHTML = `
-					<img src="${item.file}" alt="${item.nama}">
-					<p>${item.nama}</p>
+			const galeriItem = document.createElement('div');
+			galeriItem.className = 'galeri-item';
+			// determine title/description fields
+			const title = item.title || item.nama || '';
+			const desc = item.deskripsi || item.deskripsi || '';
+
+			// Prefer explicit full URL fields from backend, then fall back to other possible fields
+			const rawFile = item.file_url || item.fileUrl || item.image_url || item.image || item.file || item.path || item.filename || '';
+			const imgSrc = buildPublicUrl(rawFile) || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; // 1x1 transparent
+
+			// escape single quotes in imgSrc for inline handler
+			const escapedImgSrc = String(imgSrc).replace(/'/g, "\\'");
+
+	    galeriItem.innerHTML = `
+					<img src="${imgSrc}" alt="${title}">
+					<p class="galeri-title">${title}</p>
+					<p class="galeri-desc">${desc}</p>
 					<button onclick="editNama(${item.id})">Edit Nama</button>
-					<button onclick="showEditImageModal(${item.id}, '${item.file}')">Edit Gambar</button>
+					<button onclick="showEditImageModal(${item.id}, '${escapedImgSrc}')">Edit Gambar</button>
 					<button class="btn-danger" onclick="deleteGaleri(${item.id})">Hapus</button>
+		    <div class="image-url" style="margin-top:6px;font-size:12px;color:#555">URL: <a href="${imgSrc}" target="_blank" rel="noreferrer">${imgSrc}</a></div>
 			`;
 			galeriContainer.appendChild(galeriItem);
+
+			// Attach an error handler to try an alternate path if the primary URL fails.
+			try {
+				const imgEl = galeriItem.querySelector('img');
+				if (imgEl) {
+					imgEl.addEventListener('error', function onImgError() {
+						// Prevent infinite loop
+						if (imgEl.dataset._triedBackend) return;
+						imgEl.dataset._triedBackend = '1';
+
+						// If rawFile exists, try with a '/backend/' prefix
+						if (rawFile) {
+							const alt = buildPublicUrl('backend/' + rawFile.replace(/^\/+/, ''));
+							console.info('Image load failed, retrying with backend path:', alt);
+							imgEl.src = alt;
+						}
+					});
+				}
+			} catch (e) {
+				console.warn('Failed to attach image error handler', e);
+			}
 		});
 	} catch (error) {
 		console.error("Error:", error);
@@ -89,7 +144,7 @@ async function deleteGaleri(id) {
 	preloadingModal.style.display = "block";
 
 	try {
-		const response = await apiFetch(`/galeri/${id}`, { method: 'DELETE' });
+	const response = await apiFetch(`/galleries/${id}`, { method: 'DELETE' });
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -126,7 +181,7 @@ async function editNama(id) {
 	preloadingModal.style.display = "block";
 
 	try {
-		const response = await apiFetch(`/galeri/${id}`, { method: 'PUT', body: JSON.stringify({ nama: newName }) });
+	const response = await apiFetch(`/galleries/${id}`, { method: 'PUT', body: JSON.stringify({ title: newName }) });
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -184,7 +239,7 @@ async function editImage(id, newImageFile) {
 		formData.append("image", newImageFile);
 
 		// apiFetch doesn't automatically set Content-Type for FormData; pass headers manually without Content-Type
-		const url = `${API_BASE}/galeri/${id}/image`;
+	const url = `${API_BASE}/galleries/${id}/image`;
 		const response = await fetch(url, {
 			method: 'POST',
 			headers: {
